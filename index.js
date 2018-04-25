@@ -11,7 +11,11 @@ database.forEach(function(card, i) {
         const scriptData = fs.readFileSync(`../ygopro-scripts/c${card.id}.lua`);
 
         trainingData.push({
-            input: JSON.stringify(card),
+            input: JSON.stringify({
+                name: card.name,
+                passcode: card.id,
+                desc: card.desc
+            }),
             output: scriptData.toString()
         });
     } catch (e) {
@@ -28,15 +32,15 @@ var net = new brain.recurrent.GRU();
 
 var result = net.train(trainingData, {
     // Defaults values --> expected validation
-    iterations: 1000, // the maximum times to iterate the training data --> number greater than 0
+    iterations: 40000, // the maximum times to iterate the training data --> number greater than 0
     errorThresh: 0.05, // the acceptable error percentage from training data --> number between 0 and 1
     log: false, // true to use console.log, when a function is supplied it is used --> Either true or a function
     logPeriod: 1, // iterations between logging out --> number greater than 0
-    learningRate: 0.9, // scales with delta to effect training rate --> number between 0 and 1
-    momentum: 0.9, // scales with next layer's change value --> number between 0 and 1
+    learningRate: 0.3, // scales with delta to effect training rate --> number between 0 and 1
+    momentum: 0.5, // scales with next layer's change value --> number between 0 and 1
     callback: console.log, // a periodic call back that can be triggered while training --> null or function
     callbackPeriod: 5, // the number of iterations through the training data between callback calls --> number greater than 0
-    timeout: 20 // the max number of milliseconds to train for --> number greater than 0
+    timeout: Infinity // the max number of milliseconds to train for --> number greater than 0
 });
 
 console.log('AI trained, saving to file');
