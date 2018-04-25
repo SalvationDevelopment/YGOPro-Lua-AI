@@ -4,12 +4,16 @@ var database = require('./database.json'),
 
 var brain = require('brain.js');
 
-var net = new brain.recurrent.GRU();
-var json = require('./ai-1524629317716.json');
-net.fromJSON(json);
 
-card = database[0];
+var ai = require('./ai-1524632683164');
 
-console.log(net.run(JSON.stringify({
-    input: JSON.stringify(card.desc)
-})));
+function encode(arg) {
+    return arg.split('').map(x => x.charCodeAt(0) / 400)
+}
+
+card = database[2];
+console.log(ai(encode(JSON.stringify({
+    name: '',
+    passcode: 0000001000,
+    desc: ''
+}))))

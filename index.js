@@ -5,10 +5,15 @@ var database = require('./database.json'),
 console.log('Loading Scripts');
 
 
-//database.length = 2;
+function encode(arg) {
+    return arg.split('').map(x => x.charCodeAt(0) / 400)
+}
+
+
+database.length = 5;
 database.forEach(function(card, i) {
     try {
-        const scriptData = fs.readFileSync(`../ygopro-scripts/c${card.id}.lua`);
+        //const scriptData = fs.readFileSync(`../ygopro-scripts/c${card.id}.lua`);
 
         trainingData.push({
             input: JSON.stringify({
@@ -16,7 +21,7 @@ database.forEach(function(card, i) {
                 passcode: card.id,
                 desc: card.desc
             }),
-            output: scriptData.toString()
+            output: JSON.stringify(card.id) //encode(scriptData.toString())
         });
     } catch (e) {
         //console.log(`${card.name} not found, ${card.id}`);
@@ -32,7 +37,7 @@ var net = new brain.recurrent.GRU();
 
 var result = net.train(trainingData, {
     // Defaults values --> expected validation
-    iterations: 40000, // the maximum times to iterate the training data --> number greater than 0
+    iterations: 100, // the maximum times to iterate the training data --> number greater than 0
     errorThresh: 0.05, // the acceptable error percentage from training data --> number between 0 and 1
     log: false, // true to use console.log, when a function is supplied it is used --> Either true or a function
     logPeriod: 1, // iterations between logging out --> number greater than 0
@@ -46,6 +51,7 @@ var result = net.train(trainingData, {
 console.log('AI trained, saving to file');
 var tag = new Date().getTime();
 fs.writeFileSync(`ai-${tag}.lua`, net.run(trainingData[0].input));
-console.log(net.run(trainingData[0].input));
-var json = net.toJSON();
-fs.writeFileSync(`ai-${tag}.json`, JSON.stringify(json));
+
+const standaloneFunction = net.toFunction();
+console.log(standaloneFunction(trainingData[0].input));
+fs.writeFileSync(`ai-${tag}.js`, 'module.exports = ' + standaloneFunction.toString());
